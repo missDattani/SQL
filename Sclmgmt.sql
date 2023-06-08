@@ -1,0 +1,86 @@
+CREATE DATABASE Pooja_SchoolMgmt_326;
+
+USE Pooja_SchoolMgmt_326;
+
+CREATE TABLE Users(
+	Id INT PRIMARY KEY IDENTITY(1,1),
+	FirstName VARCHAR(100),
+	LastName VARCHAR(100),
+	Email VARCHAR(100),
+	PassWord VARCHAR(50)
+);
+
+ALTER TABLE Users
+ADD UNIQUE (Email);
+
+CREATE TABLE Student(
+	SId INT PRIMARY KEY IDENTITY(1,1),
+	FirstName VARCHAR(100),
+	LastName VARCHAR(100),
+	Address VARCHAR(MAX),
+	Mobile VARCHAR(50),
+	Email VARCHAR(100) UNIQUE,
+	Gender VARCHAR(10),
+	TeacherId INT,
+	CountryId INT,
+	StateId INT,
+	CityId INT,
+	PassWord VARCHAR(50)
+);
+
+ALTER TABLE Student
+ADD FOREIGN KEY (TeacherId) REFERENCES Teachers(TecId);
+
+ALTER TABLE Student
+ADD FOREIGN KEY (CountryId) REFERENCES Country(CoId);
+ALTER TABLE Student
+ADD FOREIGN KEY (StateId) REFERENCES States(StId);
+ALTER TABLE Student
+ADD FOREIGN KEY (CityId) REFERENCES City(CiId);
+
+CREATE TABLE Subjects(
+	SubId INT PRIMARY KEY IDENTITY(1,1),
+	SubjectName VARCHAR(100) UNIQUE
+
+);
+
+CREATE TABLE Teachers(
+	TecId INT PRIMARY KEY IDENTITY(1,1),
+	FirstName VARCHAR(100),
+	LastName VARCHAR(100),
+	Address VARCHAR(MAX),
+	Mobile VARCHAR(50),
+	Email VARCHAR(100) UNIQUE,
+	Gender VARCHAR(10),
+	SubjectId INT,
+	CountryId INT,
+	StateId INT,
+	CityId INT,
+	PassWord VARCHAR(50)
+);
+
+ALTER TABLE Teachers
+ADD FOREIGN KEY (SubjectId) REFERENCES Subjects(SubId);
+
+CREATE TABLE Country(
+	CoId INT PRIMARY KEY IDENTITY(1,1),
+	CountryName VARCHAR(100)
+);
+
+CREATE TABLE States(
+	StId INT PRIMARY KEY IDENTITY(1,1),
+	StateName VARCHAR(100),
+	CoId INT 
+	FOREIGN KEY (CoId) REFERENCES Country(CoId)
+);
+
+CREATE TABLE City(
+	CiId INT PRIMARY KEY IDENTITY(1,1),
+	CityName VARCHAR(100),
+	CoId INT,
+	StId INT
+	FOREIGN KEY (CoId) REFERENCES Country(CoId),
+	FOREIGN KEY (StId) REFERENCES States(StId)
+);
+
+SELECT * FROM Users
