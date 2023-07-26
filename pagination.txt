@@ -1,0 +1,164 @@
+USE [VATSAL_TOM_KALM_TRAINING]
+GO
+/****** Object:  StoredProcedure [dbo].[SP_EMPLOYEELIST_DATATABLE]    Script Date: 7/19/2023 11:53:50 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER   PROCEDURE [dbo].[SP_EMPLOYEELIST_DATATABLE] (  
+    @sortColumn VARCHAR(50)  
+    ,@sortOrder VARCHAR(50)  
+    ,@OffsetValue INT  
+    ,@PagingSize INT  
+    ,@SearchText VARCHAR(50)  
+    )  
+AS  
+BEGIN  
+    SELECT EMPLOYEEID  
+        ,E.NAME  
+        ,E.EMAIL  
+        ,E.TOMURN  
+        ,E.LOCATION
+        ,E.DEPTID
+        ,E.JOBROLEID
+        ,E.EMPCODE
+        ,E.COMPANYID
+        ,E.LOCATION
+		, C.NAME AS 'COMPANYNAME'
+		, D.NAME AS 'DEPARTMENTNAME'
+		, J.NAME AS 'JOBROLENAME'
+		, CASE WHEN E.ISACTIVE = 1 THEN 'Active' ELSE 'Inactive' END AS 'STATUS'
+        ,count(E.EMPLOYEEID) OVER () AS FilterTotalCount  
+    FROM EMPLOYEE E
+	INNER JOIN COMPANY C ON E.COMPANYID = C.COMPANYID
+	INNER JOIN DEPARTMENT D ON E.DEPTID = D.DEPTID AND D.COMPANYID = C.COMPANYID
+	INNER JOIN JOBROLE J ON E.JOBROLEID = J.JOBROLEID AND J.DEPTID = D.DEPTID
+    WHERE (  
+            (  
+                @SearchText <> ''  
+                AND (  
+                    E.NAME LIKE '%' + @SearchText + '%'  
+                    OR E.TOMURN LIKE '%' + @SearchText + '%'  
+                    OR E.EMAIL LIKE '%' + @SearchText + '%'  
+                    OR D.NAME LIKE '%' + @SearchText + '%'  
+                    OR J.NAME LIKE '%' + @SearchText + '%'  
+                    OR C.NAME LIKE '%' + @SearchText + '%'  
+                    OR E.EMPCODE LIKE '%' + @SearchText + '%'  
+                    OR E.EMAIL LIKE '%' + @SearchText + '%'
+					OR E.ISACTIVE LIKE '%' + CASE WHEN @SearchText = 'Active' THEN '1' END + '%'
+					OR E.ISACTIVE LIKE '%' + CASE WHEN @SearchText = 'InActive' THEN '0' END + '%'
+                    )  
+                )  
+            OR (@SearchText = '')  
+            )  
+    ORDER BY CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'NAME'  
+                THEN E.NAME  
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'NAME'  
+                THEN E.NAME  
+            END DESC  
+        ,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN 0  
+            WHEN @sortColumn = 'EMPLOYEEID'  
+                THEN E.EMPLOYEEID  
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN 0  
+            WHEN @sortColumn = 'EMPLOYEEID'  
+                THEN E.EMPLOYEEID  
+            END DESC  
+        ,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'TOMURN'  
+                THEN E.TOMURN  
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'TOMURN'  
+                THEN E.TOMURN  
+            END DESC  
+        ,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'EMAIL'  
+                THEN E.EMAIL  
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'EMAIL'  
+                THEN E.EMAIL  
+            END DESC  
+		,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'DEPARTMENTNAME'  
+                THEN D.NAME
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'DEPARTMENTNAME'  
+                THEN D.NAME  
+            END DESC 
+				,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'JOBROLENAME'  
+                THEN J.NAME
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'JOBROLENAME'  
+                THEN J.NAME  
+            END DESC 
+		,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'COMPANYNAME'  
+                THEN C.NAME
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'COMPANYNAME'  
+                THEN C.NAME  
+            END DESC 
+		,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'EMPCODE'  
+                THEN E.EMPCODE
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'EMPCODE'  
+                THEN E.EMPCODE
+            END DESC 
+        ,CASE   
+            WHEN @sortOrder <> 'ASC'  
+                THEN ''  
+            WHEN @sortColumn = 'LOCATION'  
+                THEN E.LOCATION  
+            END ASC  
+        ,CASE   
+            WHEN @sortOrder <> 'DESC'  
+                THEN ''  
+            WHEN @sortColumn = 'LOCATION'  
+                THEN E.LOCATION  
+            END DESC OFFSET @OffsetValue ROWS  
+  
+    FETCH NEXT @PagingSize ROWS ONLY  
+END 
